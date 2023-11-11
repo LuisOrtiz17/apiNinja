@@ -38,11 +38,57 @@ const loginUser = async (req, res = response) => {
   } catch (error) {
     return res.status(500).json({
       ok: false,
-      msg: "Error del servidor, contacte al administrador",
+      msg: "Error del servidor, contacte al administrador"
     });
   }
 };
 
+const cambioPassword = async(req, res = response) =>{
+    const uid = req.uid;
+    const id = req.params.id;
+    try {
+
+        if( uid !== id){
+            return res.status(401).json({
+                ok: false,
+                msg: 'El password sólo puede ser modificado por su propietario'
+            });
+        }
+
+        const { newPassword, oldPassword } = req.body;
+        const user = await Usuario.findById(uid);
+
+        const validPassCurrent = bcrypt.compareSync( oldPassword, user.password);
+
+        if(!validPassCurrent){
+            return res.status(400).json({
+                ok: false,
+                msg: 'El password anterior no coincide con el registrado'
+            });
+        }
+
+        //Hashear nuevo password
+        const salt = bcrypt.genSaltSync();
+        const passwordCifrada = bcrypt.hashSync(newPassword, salt);
+
+        const userUpdate = await Usuario.findByIdAndUpdate(id, {password: passwordCifrada}, {new: true});
+
+        return res.status(200).json({
+            ok: true,
+            usuario: userUpdate
+        });
+
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: "Error del servidor, contacte al administrador"
+        });
+    }
+}
+
 module.exports = {
   loginUser,
+  cambioPassword
 };

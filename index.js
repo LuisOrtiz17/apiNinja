@@ -24,6 +24,7 @@ app.get('/api', (req, res) => {
 
 app.use('/auth', require('./routes/auth.router'));
 app.use('/usuario', require('./routes/usuario.router'));
+app.use('/tarea', require('./routes/tarea.route'));
 
 app.listen(process.env.PORT, () => {
     console.log(`Servidor corriendo en el puerto ${process.env.PORT}`);

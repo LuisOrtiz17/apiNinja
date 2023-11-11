@@ -21,6 +21,32 @@ const allUser = async(req, res = response) => {
     }
 }
 
+const getUser = async(req, res = response) => {
+    const uid = req.params.id;
+    try {
+
+        const usuarioBD = await Usuario.findById(uid);
+
+        if (!usuarioBD) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe el usuario con el ID solicitado'
+            });
+        }
+
+        res.status(200).json({
+            ok: true,
+            usuarioBD
+        });
+        
+    } catch (error) {
+        return res.status(500).json({
+            ok: false,
+            msg: "Error del servidor, contacte al administrador"
+        });
+    }
+}
+
 const crearUser = async(req, res = response) => {
 
     //Extraemos de la request los campos que envia el cliente para poderlos manipular como variables en el codigo 
@@ -51,6 +77,54 @@ const crearUser = async(req, res = response) => {
     }
 }
 
+const updateUsuario =  async (req, res = response) => {
+
+    const uid = req.params.id;
+    try {
+        const usuarioBD = await Usuario.findById(uid);
+
+        if (!usuarioBD) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe el usuario con el ID solicitado'
+            });
+        }
+
+        const { password, role, ...campos } = req.body;
+
+        if (usuarioBD.email !== campos.email) {
+            const existeEmail = await Usuario.findOne({ email: campos.email });
+
+            if (existeEmail) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'Ya existe un usuario con ese email'
+                });
+            }
+
+        }
+
+        //Si el usuario es ADMIN puede actualizar el rol de su usuario y/o otros usuarios
+        //req.role => role del usuario que esta logeado y manda la peticion
+        if( role && req.role === 'ADMIN_ROLE'){
+            campos.role = role;
+        }
+
+        const userActualizado = await Usuario.findByIdAndUpdate(uid, campos, {new: true});
+
+        return res.status(200).json({
+            ok: true,
+            usuario: userActualizado
+        });
+        
+    } catch (error) {
+        return res.status(500).json({
+            ok: false,
+            msg: "Error del servidor, contacte al administrador"
+        });
+    }
+}
+
 const deleteUsuario = async (req, res = response) => {
 
     const uid = req.params.id;
@@ -61,7 +135,7 @@ const deleteUsuario = async (req, res = response) => {
         if (!usuarioBD) {
             return res.status(404).json({
                 ok: false,
-                msg: 'No existe el usuario con el ID proporcionado'
+                msg: 'No existe el usuario con el ID solicitado'
             });
         }
 
@@ -75,12 +149,15 @@ const deleteUsuario = async (req, res = response) => {
     } catch (error) {
         return res.status(500).json({
             ok: false,
-            msg: 'Pongase en contacto con el administrador'
+            msg: "Error del servidor, contacte al administrador"
         });
     }
 }
 
 module.exports = {
     crearUser,
-    allUser
+    allUser,
+    getUser,
+    deleteUsuario,
+    updateUsuario
 }
