@@ -4,10 +4,7 @@ const dbConnection = async() =>{
 
     try {
 
-        await mongoose.connect(process.env.BD_CONECT, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
+        await mongoose.connect(process.env.BD_CONECT);
 
         console.log('BD online...');
         

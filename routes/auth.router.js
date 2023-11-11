@@ -1,13 +1,8 @@
 const { Router} = require("express");
+const { loginUser } = require("../controller/login.controller");
 
 const router = Router();
 
-router.get('/', (req, res) => {
-
-    res.status(201).json({
-        ok: true,
-        msg: 'Mi segunda API NodeJS'
-    })
-});
+router.post('/', loginUser);
 
 module.exports = router;
